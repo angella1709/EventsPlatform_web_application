@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Мои мероприятия - Events Platform</title>
+    <style>
+        .event-card-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .event-image-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Header Section -->
+    <div class="container-fluid bg-primary text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">Мои мероприятия</h1>
+                    <p class="mb-0" th:text="'Участвую в ' + ${events.size()} + ' мероприятиях'"></p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/event/create}" class="btn btn-light">
+                        <i class="fas fa-plus me-2"></i>Создать событие
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="container py-5">
+        <div class="row" id="eventsContainer">
+            <div th:each="event : ${events}" class="col-lg-4 col-md-6 mb-4">
+                <div class="card event-card h-100 shadow-sm">
+                    <!-- Изображение мероприятия -->
+                    <th:block th:if="${not #lists.isEmpty(event.images)}">
+                        <img th:src="@{/images/{filename}(filename=${event.images.iterator().next().filename})}"
+                             class="event-card-img card-img-top"
+                             th:alt="${event.name}">
+                    </th:block>
+                    <th:block th:if="${#lists.isEmpty(event.images)}">
+                        <div class="event-image-placeholder card-img-top">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </th:block>
+
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary"
+                                  th:if="${not #lists.isEmpty(event.categories)}"
+                                  th:text="${event.categories.iterator().next().name}">
+                                Категория
+                            </span>
+                            <span class="badge bg-secondary" th:if="${#lists.isEmpty(event.categories)}">
+                                Без категории
+                            </span>
+                            <small class="text-muted" th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy')}">
+                                01.01.2024
+                            </small>
+                        </div>
+
+                        <h5 class="card-title" th:text="${event.name}">Название события</h5>
+
+                        <div class="event-details mb-3 flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                <small th:text="${event.location.city + ', ' + event.location.street}">
+                                    Город, Улица
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock text-muted me-2"></i>
+                                <small th:text="${#temporals.format(event.startTime, 'HH:mm')}">
+                                    12:00
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent px-0 pb-0 pt-2 mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a th:href="@{/event/details/{id}(id=${event.id})}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Подробнее
+                                </a>
+                                <a th:href="@{/chats/{id}(id=${event.id})}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-comments me-1"></i>Чат
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(events)}" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Вы пока не участвуете в мероприятиях</h4>
+            <p class="text-muted">Найдите интересные мероприятия и присоединяйтесь!</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a th:href="@{/events}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Найти мероприятия
+                </a>
+                <a th:href="@{/event/create}" class="btn btn-outline-primary">
+                    <i class="fas fa-plus me-2"></i>Создать мероприятие
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

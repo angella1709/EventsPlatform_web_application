@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Мероприятия - Events Platform</title>
+    <style>
+        .event-card-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .event-image-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Header Section -->
+    <div class="container-fluid bg-primary text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">Все мероприятия</h1>
+                    <p class="mb-0" th:text="'Найдено ' + ${events.size()} + ' мероприятий'"></p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/event/create}" class="btn btn-light">
+                        <i class="fas fa-plus me-2"></i>Создать событие
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="container mt-4">
+        <div class="filter-section">
+            <form th:action="@{/events}" method="get" id="filterForm">
+                <div class="filter-row">
+                    <!-- Поиск -->
+                    <div>
+                        <label for="searchInput" class="form-label">Поиск</label>
+                        <input type="text" class="form-control" id="searchInput" name="search"
+                               th:value="${searchTerm}" placeholder="Название мероприятия...">
+                    </div>
+
+                    <!-- Категория -->
+                    <div>
+                        <label for="categoryFilter" class="form-label">Категория</label>
+                        <select class="form-select" id="categoryFilter" name="categoryId">
+                            <option value="">Все категории</option>
+                            <option th:each="category : ${categories}"
+                                    th:value="${category.id}"
+                                    th:text="${category.name}"
+                                    th:selected="${selectedCategory == category.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Город -->
+                    <div>
+                        <label for="cityFilter" class="form-label">Город</label>
+                        <select class="form-select" id="cityFilter" name="city">
+                            <option value="">Все города</option>
+                            <option th:each="city : ${cities}"
+                                    th:value="${city}"
+                                    th:text="${city}"
+                                    th:selected="${selectedCity == city}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Сортировка -->
+                    <div>
+                        <label for="sortFilter" class="form-label">Сортировка</label>
+                        <select class="form-select" id="sortFilter" name="sort">
+                            <option value="newest" th:selected="${selectedSort == 'newest'}">Сначала ближние</option>
+                            <option value="oldest" th:selected="${selectedSort == 'oldest'}">Сначала дальние</option>
+                        </select>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div>
+                        <label class="form-label d-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100" id="applyFilters">
+                            <i class="fas fa-search me-2"></i>Применить
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Кнопка сброса фильтров -->
+            <div class="mt-3 text-end">
+                <a th:href="@{/events}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times me-1"></i>Сбросить фильтры
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="container py-3">
+        <div class="row" id="eventsContainer">
+            <div th:each="event : ${events}" class="col-lg-4 col-md-6 mb-4">
+                <div class="card event-card h-100 shadow-sm">
+                    <!-- Изображение мероприятия -->
+                    <th:block th:if="${not #lists.isEmpty(event.images)}">
+                        <img th:src="@{/images/{filename}(filename=${event.images.iterator().next().filename})}"
+                             class="event-card-img card-img-top"
+                             th:alt="${event.name}">
+                    </th:block>
+                    <th:block th:if="${#lists.isEmpty(event.images)}">
+                        <div class="event-image-placeholder card-img-top">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </th:block>
+
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary"
+                                  th:if="${not #lists.isEmpty(event.categories)}"
+                                  th:text="${event.categories.iterator().next().name}">
+                                Категория
+                            </span>
+                            <span class="badge bg-secondary" th:if="${#lists.isEmpty(event.categories)}">
+                                Без категории
+                            </span>
+                            <small class="text-muted" th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy')}">
+                                01.01.2024
+                            </small>
+                        </div>
+
+                        <h5 class="card-title" th:text="${event.name}">Название события</h5>
+
+                        <div class="event-details mb-3 flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                <small th:text="${event.location.city + ', ' + event.location.street}">
+                                    Город, Улица
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock text-muted me-2"></i>
+                                <small th:text="${#temporals.format(event.startTime, 'HH:mm')}">
+                                    12:00
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users text-muted me-2"></i>
+                                <small th:text="${event.participants.size() + ' участников'}">
+                                    0 участников
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent px-0 pb-0 pt-2 mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a th:href="@{/event/details/{id}(id=${event.id})}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Подробнее
+                                </a>
+                                <small class="text-muted" th:if="${event.creator}"
+                                       th:text="'от ' + ${event.creator.username}">
+                                    от организатора
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(events)}" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Мероприятия не найдены</h4>
+            <p class="text-muted">Попробуйте изменить параметры поиска или создайте первое мероприятие!</p>
+            <a th:href="@{/event/create}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Создать мероприятие
+            </a>
+        </div>
+
+        <!-- Load More Button (для будущего использования) -->
+        <div th:if="${not #lists.isEmpty(events) and events.size() >= 12}" class="text-center mt-4">
+            <button id="loadMoreBtn" class="btn btn-outline-primary">
+                <i class="fas fa-plus me-2"></i>Показать еще
+            </button>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/webjars/select2/4.0.13/js/select2.min.js"></script>
+    <link href="/webjars/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация Select2 для полей фильтрации
+            $('#categoryFilter').select2({
+                placeholder: "Выберите категорию",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#cityFilter').select2({
+                placeholder: "Выберите город",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Автопоиск при изменении фильтров
+            let searchTimeout;
+            $('#searchInput').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    $('#filterForm').submit();
+                }, 800);
+            });
+
+            $('#categoryFilter, #cityFilter, #sortFilter').on('change', function() {
+                $('#filterForm').submit();
+            });
+
+            // Обработка Enter в поле поиска
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#filterForm').submit();
+                }
+            });
+
+            // Load more functionality (заглушка для будущей реализации)
+            $('#loadMoreBtn').on('click', function() {
+                const button = $(this);
+                const originalText = button.html();
+                button.html('<span class="spinner-border spinner-border-sm"></span> Загрузка...');
+                button.prop('disabled', true);
+
+                // В реальной реализации здесь будет AJAX запрос
+                setTimeout(() => {
+                    button.html(originalText);
+                    button.prop('disabled', false);
+                    alert('Функция "Показать еще" будет реализована в будущем');
+                }, 1000);
+            });
+
+            // Показываем активные фильтры
+            function showActiveFilters() {
+                const activeFilters = [];
+                if ($('#searchInput').val()) activeFilters.push('поиск: ' + $('#searchInput').val());
+                if ($('#categoryFilter').val()) {
+                    const categoryText = $('#categoryFilter option:selected').text();
+                    activeFilters.push('категория: ' + categoryText);
+                }
+                if ($('#cityFilter').val()) activeFilters.push('город: ' + $('#cityFilter').val());
+
+                if (activeFilters.length > 0) {
+                    console.log('Активные фильтры:', activeFilters.join(', '));
+                }
+            }
+
+            // Вызываем при загрузке
+            showActiveFilters();
+        });
+    </script>
+</div>
+</body>
+</html>

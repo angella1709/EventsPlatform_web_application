@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Управление шаблонами - Админ-панель</title>
+    <style>
+        .template-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            border-radius: 12px;
+        }
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .template-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .items-count {
+            font-size: 0.875rem;
+        }
+        .category-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Заголовок и навигация -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-clipboard-list me-2 text-warning"></i>Управление шаблонами чек-листов
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Админ-панель</a></li>
+                        <li class="breadcrumb-item active">Шаблоны</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Назад
+                </a>
+                <a th:href="@{/admin/templates/create}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Создать шаблон
+                </a>
+            </div>
+        </div>
+
+        <!-- Сообщения -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Статистика шаблонов -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${templates != null ? templates.size() : 0}">0</h4>
+                                <p class="mb-0">Всего шаблонов</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clipboard-list fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${totalItems != null ? totalItems : 0}">0</h4>
+                                <p class="mb-0">Всего элементов</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-list-check fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${categoriesCount != null ? categoriesCount : 0}">0</h4>
+                                <p class="mb-0">Категорий</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-tags fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сетка шаблонов -->
+        <div class="row" id="templatesGrid">
+            <div th:each="template : ${templates}" class="col-lg-4 col-md-6 mb-4">
+                <div class="card template-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="template-icon text-warning">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <span class="badge bg-secondary category-badge"
+                                  th:text="${template.category}">Категория</span>
+                        </div>
+
+                        <h5 class="card-title" th:text="${template.name}">Название шаблона</h5>
+                        <p class="card-text text-muted" th:text="${template.description ?: 'Нет описания'}">
+                            Описание шаблона
+                        </p>
+
+                        <div class="template-info mb-3">
+                            <div class="items-count">
+                                <i class="fas fa-list-check text-muted me-1"></i>
+                                <span th:text="${template.items != null ? template.items.size() : 0}">0</span> элементов
+                            </div>
+                            <small class="text-muted">
+                                Создан: <span th:text="${#temporals.format(template.createdAt, 'dd.MM.yyyy')}">01.01.2024</span>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/admin/templates/{id}/edit(id=${template.id})}"
+                                   class="btn btn-outline-primary"
+                                   title="Редактировать">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-outline-danger"
+                                        data-template-id="${template.id}"
+                                        data-template-name="${#strings.replace(template.name, '''', '\\''')}"
+                                        onclick="confirmDeleteTemplate(this)"
+                                        title="Удалить">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <a th:href="@{'/admin/templates/' + ${template.id} + '/view'}"
+                               class="btn btn-outline-success btn-sm"
+                               target="_blank">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(templates)}" class="text-center py-5">
+            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Шаблоны не найдены</h4>
+            <p class="text-muted">Создайте первый шаблон чек-листа для мероприятий</p>
+            <a th:href="@{/admin/templates/create}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Создать шаблон
+            </a>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автоматическое скрытие alert
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+
+        function confirmDeleteTemplate(templateId, templateName) {
+            if (confirm(`Вы уверены, что хотите удалить шаблон "${templateName}"? Все связанные элементы также будут удалены.`)) {
+                // Создаем форму для отправки POST запроса
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/templates/${templateId}/delete`;
+
+                // Добавляем CSRF токен
+                const csrfToken = document.querySelector('input[name="_csrf"]');
+                if (csrfToken) {
+                    form.appendChild(csrfToken.cloneNode());
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function filterTemplates(category) {
+            const templates = document.querySelectorAll('.col-lg-4.col-md-6.mb-4');
+            templates.forEach(template => {
+                const templateCategory = template.querySelector('.category-badge').textContent;
+                if (category === 'all' || templateCategory === category) {
+                    template.style.display = 'block';
+                } else {
+                    template.style.display = 'none';
+                }
+            });
+        }
+
+        function confirmDeleteTemplate(button) {
+            const templateId = button.getAttribute('data-template-id');
+            const templateName = button.getAttribute('data-template-name');
+
+            if (confirm(`Вы уверены, что хотите удалить шаблон "${templateName}"? Все связанные элементы также будут удалены.`)) {
+                // Создаем форму для отправки POST запроса
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/templates/${templateId}/delete`;
+
+                // Добавляем CSRF токен
+                const csrfToken = document.querySelector('input[name="_csrf"]');
+                if (csrfToken) {
+                    form.appendChild(csrfToken.cloneNode());
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

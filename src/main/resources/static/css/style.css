@@ -1,0 +1,526 @@
+/* Custom styles for EventsPlatform - Pastel Theme */
+
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #8b5cf6;
+    --secondary: #06d6a0;
+    --accent: #f59e0b;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --error: #ef4444;
+    --success: #10b981;
+}
+
+/* Hero section */
+.hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.hero .btn-light {
+    background-color: #f8f5f0;
+    border-color: #f8f5f0;
+    color: #5a5a5a;
+    transition: all 0.3s ease;
+}
+
+.hero .btn-light:hover {
+    background-color: #aadde6;
+    border-color: #aae6df;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Primary buttons */
+.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Secondary buttons */
+.btn-outline-primary {
+    color: #8fabbc;
+    border-color: #8fafbc;
+}
+
+.btn-outline-primary:hover {
+    background-color: #8facbc;
+    border-color: #8fafbc;
+    color: white;
+}
+
+/* Navigation */
+.navbar-dark.bg-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #f8f5f0 !important;
+}
+
+/* Feature boxes */
+.feature-box {
+    padding: 2rem;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: #faf7f2;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    height: 100%;
+    border: 1px solid #e6d2aa;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    background: #f8f5f0;
+}
+
+.feature-box h3 {
+    color: #8fb0bc;
+    margin-bottom: 1rem;
+}
+
+.feature-box i {
+    color: #a8d1d5;
+}
+
+/* Cards */
+.card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    background: #f8f5f0;
+}
+
+.card-header {
+    background-color: #f8f5f0 !important;
+    border-bottom: 1px solid #dff8fa;
+}
+
+/* Forms */
+.form-control:focus {
+    border-color: #a8cbd5;
+    box-shadow: 0 0 0 0.2rem rgba(168, 213, 186, 0.25);
+}
+
+/* Badges */
+.badge.bg-primary {
+    background-color: #a8cbd5 !important;
+}
+
+/* Event date */
+.event-date {
+    background: #a8c9d5;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Footer */
+footer.bg-dark {
+    background: linear-gradient(135deg, #6997c1 0%, #4b6dbf 100%) !important;
+}
+
+/* Social links */
+.social-links a:hover {
+    color: #c3e0e6 !important;
+}
+
+/* Alerts */
+.alert-success {
+    background-color: #d4e6ed;
+    border-color: #c3d6e6;
+    color: #3871aa;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Text colors */
+.text-primary {
+    color: #8fafbc !important;
+}
+
+/* Background colors */
+.bg-light {
+    background-color: #faf7f2 !important;
+}
+
+/* Loading animation */
+.loading {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #a8c4d5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .hero {
+        padding: 2rem 0;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Стили для формы создания мероприятия */
+.event-form-card {
+    border: none;
+    box-shadow: 0 4px 20px rgba(168, 213, 186, 0.2);
+    border-radius: 15px;
+}
+
+.event-form-card .card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+}
+
+.form-check-input:checked {
+    background-color: #8fabbc;
+    border-color: #8facbc;
+}
+
+/* Счетчик символов */
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Валидация */
+.was-validated .form-control:valid,
+.was-validated .form-control:invalid {
+    border-width: 2px;
+}
+
+.was-validated .form-control:valid {
+    border-color: #8fbc8f;
+}
+
+.was-validated .form-control:invalid {
+    border-color: #dc3545;
+}
+
+/* Советы */
+.tips-card {
+    background-color: #faf7f2;
+    border: 1px solid #dff8fa;
+}
+
+.tips-card .card-title {
+    color: #8fbc8f;
+}
+
+.chat-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1rem;
+    height: 80vh;
+}
+
+.chat-messages {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.side-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.task-item, .checklist-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s;
+}
+
+.task-item:hover, .checklist-item:hover {
+    background: var(--background);
+}
+
+/* Admin styles */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .event-form-card {
+        margin: 0 -1rem;
+        border-radius: 0;
+    }
+
+    .event-form-card .card-header {
+        border-radius: 0 !important;
+    }
+}
+
+/* Стили для новых категорий */
+#newCategoriesList .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+#newCategoriesList .btn-close {
+    font-size: 0.7rem;
+    margin-left: 0.25rem;
+}
+
+/* Анимация для новых элементов */
+#newCategoriesList .badge {
+    animation: fadeIn 0.3s ease-in;
+}
+
+footer {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Стили для формы загрузки изображения */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #c3e0e6;
+    color: white;
+}
+
+#imagePreview {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+}
+
+#preview {
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Стили для карточек мероприятий */
+.event-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 12px;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.event-card-img {
+    border-radius: 12px 12px 0 0;
+}
+
+.event-image-placeholder {
+    border-radius: 12px 12px 0 0;
+}
+
+/* Стили для фильтров */
+.filter-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Стили для Select2 */
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    height: 38px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+/* Исправление для статистических карточек */
+.admin-stats .stat-card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+/* Исправление для таблиц */
+.table-responsive {
+    border-radius: 8px;
+}
+
+/* Исправление для карточек мероприятий */
+.event-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.image-placeholder {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* Исправление для сетки шаблонов */
+#templatesGrid .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#templatesGrid .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Стили для админ-панели и отчетов */
+.admin-stats .card {
+    transition: transform 0.2s ease;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-stats .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.report-section {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Анимация появления отчета */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.report-generated {
+    animation: fadeIn 0.5s ease;
+}

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title th:text="${event.name}">Детали мероприятия</title>
+    <style>
+        .event-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .event-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+        .event-header-content {
+            position: relative;
+            z-index: 2;
+        }
+        .event-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        .event-image-placeholder {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .gallery-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .gallery-image:hover {
+            transform: scale(1.05);
+        }
+        .image-upload-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .main-image-container {
+            position: relative;
+        }
+        .image-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .action-buttons {
+            margin-bottom: 2rem;
+        }
+        .info-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .info-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+        .comment-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+        .chat-feature {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Шапка мероприятия с фотографией -->
+    <div class="event-header" th:style="${mainImage != null} ? 'background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(/images/' + ${mainImage.filename} + '); background-size: cover; background-position: center;' : ''">
+        <div class="container event-header-content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb bg-transparent text-white mb-3">
+                            <li class="breadcrumb-item"><a th:href="@{/}" class="text-white">Главная</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/events}" class="text-white">Мероприятия</a></li>
+                            <li class="breadcrumb-item active text-white" th:text="${event.name}"></li>
+                        </ol>
+                    </nav>
+                    <h1 th:text="${event.name}">Название мероприятия</h1>
+                    <p class="lead mb-0" th:text="${event.description}">Описание мероприятия</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div th:if="${isCreator}" class="creator-badge">
+                        <span class="badge bg-warning">Вы организатор</span>
+                    </div>
+                    <div th:if="${isParticipant && !isCreator}" class="participant-badge">
+                        <span class="badge bg-success">Вы участник</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Основное изображение и галерея -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="main-image-container">
+                    <th:block th:if="${mainImage != null}">
+                        <img th:src="@{/images/{filename}(filename=${mainImage.filename})}"
+                             class="event-image"
+                             alt="Основное изображение мероприятия">
+                    </th:block>
+                    <th:block th:unless="${mainImage != null}">
+                        <div class="event-image-placeholder">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            <span>Нет изображения</span>
+                        </div>
+                    </th:block>
+                </div>
+
+                <!-- Галерея изображений -->
+                <th:block th:if="${not #lists.isEmpty(eventImages) and eventImages.size() > 1}">
+                    <h5 class="mt-4 mb-3">Галерея мероприятия</h5>
+                    <div class="image-gallery">
+                        <th:block th:each="image : ${eventImages}">
+                            <img th:src="@{/images/{filename}(filename=${image.filename})}"
+                                 class="gallery-image"
+                                 th:alt="${'Изображение мероприятия ' + event.name}"
+                                 onclick="openImageModal(this.src)">
+                        </th:block>
+                    </div>
+                </th:block>
+
+                <!-- Загрузка изображений (для участников)
+                <th:block th:if="${isParticipant}">
+                    <div class="image-upload-section">
+                        <h6 class="mb-3">
+                            <i class="fas fa-camera me-2"></i>Добавить фотографии
+                        </h6>
+                        <form th:action="@{/api/v1/images/event/{eventId}(eventId=${event.id})}"
+                              method="post"
+                              enctype="multipart/form-data"
+                              class="d-flex gap-2">
+
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                            <input type="file"
+                                   name="file"
+                                   multiple
+                                   accept="image/*"
+                                   class="form-control"
+                                   required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Загрузить
+                            </button>
+                        </form>
+                        <small class="text-muted">Максимальный размер файла: 10MB. Разрешены: JPG, PNG, GIF</small>
+                    </div>
+                </th:block>-->
+            </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="action-buttons mb-4">
+            <th:block th:if="${!isParticipant}">
+                <form th:action="@{/event/{id}/join(id=${event.id})}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Присоединиться к мероприятию
+                    </button>
+                </form>
+            </th:block>
+
+            <th:block th:if="${isParticipant}">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a th:href="@{/chats/{id}(id=${event.id})}" class="btn btn-success btn-lg">
+                        <i class="fas fa-comments me-2"></i>Перейти в чат мероприятия
+                    </a>
+                    <form th:action="@{/event/{id}/leave(id=${event.id})}" method="post" class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-outline-danger btn-lg">
+                            <i class="fas fa-user-minus me-2"></i>Покинуть мероприятие
+                        </button>
+                    </form>
+                </div>
+            </th:block>
+
+            <th:block th:if="${isCreator}">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a th:href="@{/event/edit/{id}(id=${event.id})}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-edit me-2"></i>Редактировать мероприятие
+                    </a>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Блок с призывом к чату для участников
+        <th:block th:if="${isParticipant}">
+            <div class="chat-feature">
+                <h3><i class="fas fa-comments me-2"></i>Чат мероприятия</h3>
+                <p class="mb-3">Общайтесь с другими участниками, координируйте задачи и планируйте мероприятие вместе!</p>
+                <a th:href="@{/chats/{id}(id=${event.id})}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>Перейти в чат
+                </a>
+            </div>
+        </th:block>-->
+
+        <div class="info-grid">
+            <!-- Левая колонка -->
+            <div>
+                <!-- Подробное описание -->
+                <div class="card info-card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-align-left me-2"></i>Описание мероприятия</h5>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${event.description}" class="mb-0" style="white-space: pre-line;">Описание мероприятия</p>
+                    </div>
+                </div>
+
+                <!-- Участники -->
+                <div class="card info-card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Участники</h5>
+                        <span class="badge bg-primary" th:text="${event.participants.size()}">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div th:each="participant : ${event.participants}"
+                                 class="col-6 col-md-4 col-lg-3 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <th:block th:if="${participant.avatar != null}">
+                                        <img th:src="@{/images/{filename}(filename=${participant.avatar.filename})}"
+                                             class="participant-avatar me-2"
+                                             th:alt="${participant.username}">
+                                    </th:block>
+                                    <th:block th:unless="${participant.avatar != null}">
+                                        <div class="avatar-placeholder me-2">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </th:block>
+                                    <div>
+                                        <div class="fw-medium" th:text="${participant.username}">username</div>
+                                        <th:block th:if="${participant.id == event.creator.id}">
+                                            <small class="text-muted">Организатор</small>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Комментарии -->
+                <div class="card info-card" id="commentSection" th:attr="data-event-id=${event.id}">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Комментарии</h5>
+                        <span class="badge bg-primary" th:text="${comments.size()}">0</span>
+                    </div>
+                    <div class="card-body">
+                        <th:block th:if="${isParticipant}">
+                            <form id="commentForm" class="mb-4">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <div class="mb-3">
+                    <textarea id="commentText" class="form-control"
+                              placeholder="Добавить комментарий..."
+                              rows="3" required maxlength="500"></textarea>
+                                    <div class="form-text"><span id="commentCounter">0</span>/500 символов</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-paper-plane me-1"></i>Отправить комментарий
+                                </button>
+                            </form>
+                        </th:block>
+
+                        <div id="commentsList">
+                            <th:block th:if="${not #lists.isEmpty(comments)}">
+                                <div th:each="comment : ${comments}" class="comment-item" th:id="'comment-' + ${comment.id}">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <th:block th:if="${comment.user.avatar != null}">
+                                                <img th:src="@{/images/{filename}(filename=${comment.user.avatar.filename})}"
+                                                     class="participant-avatar me-2"
+                                                     th:alt="${comment.user.username}">
+                                            </th:block>
+                                            <th:block th:unless="${comment.user.avatar != null}">
+                                                <div class="avatar-placeholder me-2">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            </th:block>
+                                            <div>
+                                                <div class="fw-medium" th:text="${comment.user.username}">Автор</div>
+                                                <small class="text-muted"
+                                                       th:text="${#temporals.format(comment.createdAt, 'dd.MM.yyyy HH:mm')}">
+                                                    01.01.2024 12:00
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <th:block th:if="${comment.user.id == currentUser.id}">
+                                            <button class="btn btn-sm btn-outline-danger delete-comment"
+                                                    th:data-comment-id="${comment.id}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </th:block>
+                                    </div>
+                                    <p class="mb-0" th:text="${comment.text}">Текст комментария</p>
+                                </div>
+                            </th:block>
+                            <th:block th:if="${#lists.isEmpty(comments)}">
+                                <p class="text-muted text-center mb-0">Пока нет комментариев</p>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка -->
+            <div>
+                <!-- Информация о мероприятии -->
+                <div class="card info-card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <strong><i class="fas fa-calendar me-2 text-primary"></i>Дата и время:</strong><br>
+                            <span th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy HH:mm')} + ' - ' + ${#temporals.format(event.endTime, 'HH:mm')}">
+                                01.01.2024 12:00 - 18:00
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="fas fa-map-marker-alt me-2 text-primary"></i>Место:</strong><br>
+                            <span th:text="${event.location.city + ', ' + event.location.street}">
+                                Город, Улица
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="fas fa-tags me-2 text-primary"></i>Категории:</strong><br>
+                            <th:block th:each="category : ${event.categories}">
+                                <span class="badge bg-primary me-1 mb-1" th:text="${category.name}">Категория</span>
+                            </th:block>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="fas fa-user me-2 text-primary"></i>Организатор:</strong><br>
+                            <span th:text="${event.creator.username}">username</span>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="fas fa-users me-2 text-primary"></i>Участников:</strong><br>
+                            <span th:text="${event.participants.size()}">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статус мероприятия -->
+                <div class="card info-card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Статус</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- В файле src/main/resources/templates/events/detail.html замените блок статуса: -->
+                        <th:block th:with="now=${T(java.time.Instant).now()}">
+                            <th:block th:if="${event.startTime.isAfter(now)}">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <strong>Предстоящее</strong><br>
+                                    <small>Мероприятие начнется
+                                        <span th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy')}">
+                    в ближайшее время
+                </span>
+                                    </small>
+                                </div>
+                            </th:block>
+                            <th:block th:if="${event.startTime.isBefore(now) and event.endTime.isAfter(now)}">
+                                <div class="alert alert-success mb-0">
+                                    <i class="fas fa-play-circle me-2"></i>
+                                    <strong>Идет сейчас</strong><br>
+                                    <small>Мероприятие активно</small>
+                                </div>
+                            </th:block>
+                            <th:block th:if="${event.endTime.isBefore(now)}">
+                                <div class="alert alert-secondary mb-0">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Завершено</strong><br>
+                                    <small>Мероприятие закончилось</small>
+                                </div>
+                            </th:block>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно для просмотра изображений -->
+        <div class="modal fade" id="imageModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Просмотр изображения</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img id="modalImage" src="" class="img-fluid" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        function openImageModal(imageSrc) {
+            document.getElementById('modalImage').src = imageSrc;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+
+        // Комментарии
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentForm = document.getElementById('commentForm');
+            const commentText = document.getElementById('commentText');
+            const commentCounter = document.getElementById('commentCounter');
+            const commentsList = document.getElementById('commentsList');
+
+            // Получаем eventId
+            const commentSection = document.getElementById('commentSection');
+            const eventId = commentSection ? commentSection.getAttribute('data-event-id') : null;
+
+            if (!eventId) {
+                console.error('Event ID not found');
+                return;
+            }
+
+            // Счетчик символов
+            if (commentText && commentCounter) {
+                commentText.addEventListener('input', function() {
+                    commentCounter.textContent = this.value.length;
+                });
+            }
+
+            // Отправка комментария
+            if (commentForm) {
+                commentForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const text = commentText.value.trim();
+                    if (!text) {
+                        alert('Введите текст комментария');
+                        return;
+                    }
+
+                    try {
+                        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+                        const response = await fetch('/api/v1/comment?eventId=' + eventId, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({ text: text })
+                        });
+
+                        if (response.ok) {
+                            const comment = await response.json();
+                            addCommentToDOM(comment);
+                            commentText.value = '';
+                            if (commentCounter) commentCounter.textContent = '0';
+                            updateCommentsCount();
+                            showToast('Комментарий добавлен', 'success');
+                        } else {
+                            alert('Ошибка при добавлении комментария');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Ошибка при добавлении комментария');
+                    }
+                });
+            }
+
+            // Удаление комментария
+            if (commentsList) {
+                commentsList.addEventListener('click', async function(e) {
+                    if (e.target.closest('.delete-comment')) {
+                        const button = e.target.closest('.delete-comment');
+                        const commentId = button.getAttribute('data-comment-id');
+
+                        try {
+                            const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+                            const response = await fetch('/api/v1/comment/' + commentId + '?eventId=' + eventId, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': csrfToken
+                                }
+                            });
+
+                            if (response.ok) {
+                                const commentElement = document.getElementById('comment-' + commentId);
+                                if (commentElement) {
+                                    commentElement.remove();
+                                    updateCommentsCount();
+                                    showToast('Комментарий удален', 'success');
+                                }
+                            } else {
+                                alert('Ошибка при удалении комментария');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Ошибка при удалении комментария');
+                        }
+                    }
+                });
+            }
+
+            function addCommentToDOM(comment) {
+                if (!commentsList) return;
+
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment-item';
+                commentElement.id = 'comment-' + comment.id;
+
+                const commentDate = new Date().toLocaleString('ru-RU'); // Или использовать comment.createdAt
+
+                commentElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-placeholder me-2">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="fw-medium">${comment.author || 'Пользователь'}</div>
+                                <small class="text-muted">Только что</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger delete-comment" data-comment-id="${comment.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <p class="mb-0">${comment.text}</p>
+                `;
+
+                // Добавляем в начало списка
+                const existingComments = commentsList.querySelectorAll('.comment-item');
+                if (existingComments.length > 0) {
+                    commentsList.insertBefore(commentElement, existingComments[0]);
+                } else {
+                    commentsList.appendChild(commentElement);
+                }
+            }
+
+            function updateCommentsCount() {
+                const badge = document.querySelector('.card-header .badge');
+                if (badge) {
+                    const count = document.querySelectorAll('.comment-item').length;
+                    badge.textContent = count;
+                }
+            }
+
+            function showToast(message, type = 'success') {
+                // Простая реализация toast
+                alert(message); // Временное решение
+            }
+        });
+    </script>
+</div>
+</body>
+</html>

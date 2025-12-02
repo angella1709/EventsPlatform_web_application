@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Просмотр шаблона - Админ-панель</title>
+    <style>
+        .template-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .item-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .category-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Навигация -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-eye me-2 text-primary"></i>Просмотр шаблона
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Админ-панель</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/templates}">Шаблоны</a></li>
+                        <li class="breadcrumb-item active" th:text="${template.name}">Название шаблона</li>
+                    </ol>
+                </nav>
+            </div>
+            <a th:href="@{/admin/templates}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+        </div>
+
+        <!-- Основная информация -->
+        <div class="card template-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>Основная информация
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Название:</strong>
+                        <p class="mb-2" th:text="${template.name}">Название шаблона</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Категория:</strong>
+                        <span class="category-badge" th:text="${template.category}">Категория</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Описание:</strong>
+                        <!-- ИСПРАВЛЕННАЯ СТРОКА -->
+                        <p th:if="${template.description != null and template.description != ''}"
+                           th:text="${template.description}" class="mb-0">
+                            Описание шаблона
+                        </p>
+                        <p th:unless="${template.description != null and template.description != ''}"
+                           class="mb-0 text-muted">
+                            Описание отсутствует
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Дата создания:</strong>
+                        <p class="mb-0 text-muted"
+                           th:text="${#temporals.format(template.createdAt, 'dd.MM.yyyy HH:mm')}">
+                            01.01.2024 12:00
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>ID шаблона:</strong>
+                        <p class="mb-0 text-muted" th:text="${template.id}">1</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Элементы шаблона -->
+        <div class="card template-card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list-check me-2"></i>Элементы шаблона
+                    <span class="badge bg-light text-dark ms-2"
+                          th:text="${template.items != null ? template.items.size() : 0}">0</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${template.items != null and !template.items.isEmpty()}">
+                    <div th:each="item : ${template.items}" class="item-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-1" th:text="${item.name}">Название элемента</h6>
+                                <!-- ИСПРАВЛЕННАЯ СТРОКА -->
+                                <p th:if="${item.description != null and item.description != ''}"
+                                   th:text="${item.description}"
+                                   class="text-muted mb-1 small">
+                                    Описание элемента
+                                </p>
+                                <p th:unless="${item.description != null and item.description != ''}"
+                                   class="text-muted mb-1 small">
+                                    Описание отсутствует
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-hashtag me-1"></i>
+                                    <span th:text="${item.defaultQuantity}">1</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${template.items == null or template.items.isEmpty()}" class="text-center py-4">
+                    <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Элементы отсутствуют</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="mt-4">
+            <div class="d-flex gap-2 justify-content-end">
+                <a th:href="@{'/admin/templates/' + ${template.id} + '/edit'}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Редактировать
+                </a>
+                <a th:href="@{/admin/templates}" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>Все шаблоны
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

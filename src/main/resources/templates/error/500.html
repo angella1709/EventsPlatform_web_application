@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ошибка сервера - EventsPlatform</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error-container {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row error-container">
+        <div class="col-md-6 text-center">
+            <h1 class="text-danger display-1">500</h1>
+            <h2 class="text-danger">Ошибка сервера</h2>
+            <p class="lead mt-3">Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.</p>
+            <p th:if="${errorId}" class="text-muted">
+                ID ошибки: <code th:text="${errorId}"></code>
+            </p>
+            <div class="mt-4">
+                <a th:href="@{/}" class="btn btn-primary me-2">На главную</a>
+                <button onclick="location.reload()" class="btn btn-outline-secondary">Обновить страницу</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

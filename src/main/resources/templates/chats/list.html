@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Мои чаты - Events Platform</title>
+    <style>
+        .chat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            border-radius: 12px;
+        }
+        .chat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .event-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .image-placeholder {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .unread-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        .last-message {
+            font-size: 0.875rem;
+            color: #6c757d;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .chat-status {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Заголовок -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-comments me-2 text-primary"></i>Мои чаты
+                </h1>
+                <p class="text-muted mb-0" th:text="'Участвую в ' + ${events != null ? events.size() : 0} + ' мероприятиях'">
+                    Участвую в 0 мероприятиях
+                </p>
+            </div>
+            <a th:href="@{/events}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Найти мероприятия
+            </a>
+        </div>
+
+        <!-- Сообщения -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}">Ошибка загрузки чатов</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Сетка чатов -->
+        <div class="row" id="chatsGrid">
+            <div th:each="event : ${events}" class="col-lg-6 col-xl-4 mb-4">
+                <div class="card chat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <!-- Изображение мероприятия -->
+                            <div class="position-relative me-3">
+                                <th:block th:if="${not #lists.isEmpty(event.images)}">
+                                    <img th:src="@{/images/{filename}(filename=${event.images.iterator().next().filename})}"
+                                         class="event-image"
+                                         th:alt="${event.name}">
+                                </th:block>
+                                <th:block th:if="${#lists.isEmpty(event.images)}">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                </th:block>
+                                <!-- Бейдж непрочитанных сообщений (закомментирован пока нет функционала) -->
+                                <!--
+                                <th:block th:if="${event.unreadCount > 0}">
+                                    <span class="badge bg-danger unread-badge"
+                                          th:text="${event.unreadCount}">0</span>
+                                </th:block>
+                                -->
+                            </div>
+
+                            <!-- Информация о мероприятии -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0" th:text="${event.name}">Название мероприятия</h5>
+                                    <th:block th:with="now=${T(java.time.Instant).now()}">
+                                        <th:block th:if="${event.startTime.isAfter(now)}">
+                                            <span class="badge bg-success chat-status">Предстоящее</span>
+                                        </th:block>
+                                        <th:block th:if="${event.startTime.isBefore(now) and event.endTime.isAfter(now)}">
+                                            <span class="badge bg-primary chat-status">Активное</span>
+                                        </th:block>
+                                        <th:block th:if="${event.endTime.isBefore(now)}">
+                                            <span class="badge bg-secondary chat-status">Завершено</span>
+                                        </th:block>
+                                    </th:block>
+                                </div>
+
+                                <div class="event-details mb-2">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-map-marker-alt text-muted me-1" style="font-size: 0.75rem;"></i>
+                                        <small class="text-muted"
+                                               th:text="${event.location.city + ', ' + event.location.street}">
+                                            Город, Улица
+                                        </small>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-clock text-muted me-1" style="font-size: 0.75rem;"></i>
+                                        <small class="text-muted"
+                                               th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy HH:mm')}">
+                                            01.01.2024 12:00
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Последнее сообщение (закомментирован пока нет функционала) -->
+                                <!--
+                                <div class="last-message mb-2"
+                                     th:if="${event.lastMessage}"
+                                     th:text="${event.lastMessage.content}">
+                                    Последнее сообщение в чате...
+                                </div>
+                                -->
+                                <div class="last-message mb-2 text-muted">
+                                    Нажмите чтобы открыть чат
+                                </div>
+
+                                <!-- Участники -->
+                                <div class="participants">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i>
+                                        <span th:text="${event.participants.size()}">0</span> участников
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a th:href="@{/chats/{id}(id=${event.id})}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-comments me-1"></i>Открыть чат
+                            </a>
+                            <div class="d-flex gap-1">
+                                <a th:href="@{/event/details/{id}(id=${event.id})}"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   title="Информация о мероприятии">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <th:block th:if="${event.creator.id == currentUser.id}">
+                                    <a th:href="@{/event/edit/{id}(id=${event.id})}"
+                                       class="btn btn-outline-warning btn-sm"
+                                       title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(events)}" class="text-center py-5">
+            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">У вас пока нет чатов</h4>
+            <p class="text-muted">Присоединяйтесь к мероприятиям, чтобы начать общение в чатах</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a th:href="@{/events}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Найти мероприятия
+                </a>
+                <a th:href="@{/event/create}" class="btn btn-outline-primary">
+                    <i class="fas fa-plus me-2"></i>Создать мероприятие
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автоматическое скрытие alert
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+
+            // Поиск чатов
+            const searchInput = document.getElementById('searchChats');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterChats);
+            }
+        });
+
+        function filterChats() {
+            const searchTerm = document.getElementById('searchChats').value.toLowerCase();
+            const chatCards = document.querySelectorAll('.col-lg-6.col-xl-4.mb-4');
+
+            chatCards.forEach(card => {
+                const eventName = card.querySelector('.card-title').textContent.toLowerCase();
+                const eventLocation = card.querySelector('.event-details small').textContent.toLowerCase();
+
+                if (eventName.includes(searchTerm) || eventLocation.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Функция для обновления статуса непрочитанных сообщений
+        function updateUnreadCount(eventId, count) {
+            const badge = document.querySelector(`[data-event-id="${eventId}"] .unread-badge`);
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

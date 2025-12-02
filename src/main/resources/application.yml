@@ -1,0 +1,42 @@
+spring:
+  liquibase:
+    change-log: classpath:db/master.xml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/events_db
+    username: postgres
+    password: postgres
+    hikari:
+      schema: events_schema
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS events_schema
+      connection-timeout: 10000
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        default_batch_fetch_size: 20
+        connection_provider_disables_autocommit: true
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false # Set to true in production
+    servlet:
+      content-type: text/html
+  mvc:
+    static-path-pattern: /**
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/public/,file:${app.upload.dir:uploads}/
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      enabled: true
+      file-size-threshold: 2KB
+
+app:
+  upload:
+    dir: uploads

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Управление пользователями - Админ-панель</title>
+    <style>
+        .users-table img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .badge-admin {
+            background-color: #dc3545;
+        }
+        .badge-user {
+            background-color: #28a745;
+        }
+        .action-buttons {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Заголовок и навигация -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-users me-2 text-primary"></i>Управление пользователями
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Админ-панель</a></li>
+                        <li class="breadcrumb-item active">Пользователи</li>
+                    </ol>
+                </nav>
+            </div>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+        </div>
+
+        <!-- Сообщения -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Таблица пользователей -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Список пользователей
+                    <span class="badge bg-primary ms-2" th:text="${users.size()}">0</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover users-table">
+                        <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Дата регистрации</th>
+                            <th>Мероприятий создано</th>
+                            <th>Участвует в</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${users}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <th:block th:if="${user.avatar != null}">
+                                        <img th:src="@{/images/{filename}(filename=${user.avatar.filename})}"
+                                             alt="Аватар" class="me-3">
+                                    </th:block>
+                                    <th:block th:unless="${user.avatar != null}">
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                             style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    </th:block>
+                                    <div>
+                                        <div th:text="${user.firstName + ' ' + user.lastName} ?: user.username" class="fw-medium"></div>
+                                        <small class="text-muted" th:text="'@' + ${user.username}"></small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${user.email}">email@example.com</td>
+                            <td>
+                                <th:block th:each="role : ${user.roles}">
+                                    <span th:if="${role.name() == 'ROLE_ADMIN'}" class="badge badge-admin">Админ</span>
+                                    <span th:if="${role.name() == 'ROLE_USER'}" class="badge badge-user">Пользователь</span>
+                                </th:block>
+                            </td>
+                            <td th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">01.01.2024</td>
+                            <td>
+                                <span class="badge bg-info" th:text="${user.createdEvents.size()}">0</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" th:text="${user.events.size()}">0</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm action-buttons">
+                                    <!-- Кнопка назначения/снятия админа -->
+                                    <th:block th:if="${#lists.contains(user.roles, T(com.example.angella.eventsplatform.entity.Role).ROLE_ADMIN)}">
+                                        <form th:action="@{/admin/users/{userId}/toggle-admin(userId=${user.id})}" method="post" class="d-inline">
+                                            <input type="hidden" name="makeAdmin" value="false">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-warning"
+                                                    title="Убрать права администратора">
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                        </form>
+                                    </th:block>
+                                    <th:block th:unless="${#lists.contains(user.roles, T(com.example.angella.eventsplatform.entity.Role).ROLE_ADMIN)}">
+                                        <form th:action="@{/admin/users/{userId}/toggle-admin(userId=${user.id})}" method="post" class="d-inline">
+                                            <input type="hidden" name="makeAdmin" value="true">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-success"
+                                                    title="Назначить администратором">
+                                                <i class="fas fa-user-shield"></i>
+                                            </button>
+                                        </form>
+                                    </th:block>
+
+                                    <!-- Кнопка удаления
+                                    <button type="button" class="btn btn-danger delete-user-btn"
+                                            th:attr="data-user-id=${user.id}, data-username=${user.username}"
+                                            title="Удалить пользователя">
+                                        <i class="fas fa-trash"></i>
+                                    </button> -->
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <p>Нет пользователей</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработка удаления пользователей
+            /*const deleteButtons = document.querySelectorAll('.delete-user-btn');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const username = this.getAttribute('data-username');
+
+                    if (confirm('Вы уверены, что хотите удалить пользователя "' + username + '"? Это действие нельзя отменить.')) {
+                        // Создаем форму для отправки POST запроса
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/admin/users/' + userId + '/delete';
+
+                        // Добавляем CSRF токен
+                        const csrfToken = document.querySelector('input[name="_csrf"]');
+                        if (csrfToken) {
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = csrfToken.name;
+                            csrfInput.value = csrfToken.value;
+                            form.appendChild(csrfInput);
+                        }
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });*/
+
+            // Автоматическое скрытие alert через 5 секунд
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+</div>
+</body>
+</html>

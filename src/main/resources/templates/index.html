@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Главная - Events Platform</title>
+    <style>
+        .event-card-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .event-image-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">Добро пожаловать на EventsPlatform</h1>
+            <p class="lead mb-4">Находите, создавайте и присоединяйтесь к лучшим мероприятиям в вашем городе</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a th:href="@{/events}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-search me-2"></i>Найти мероприятия
+                </a>
+                <a th:href="@{/event/create}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Создать событие
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Почему выбирают нас?</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-calendar-check fa-3x mb-3 text-primary"></i>
+                        <h3>Простая организация</h3>
+                        <p>Создавайте мероприятия за несколько минут с удобным интерфейсом</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                        <h3>Сообщество</h3>
+                        <p>Присоединяйтесь к активному сообществу единомышленников</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-bell fa-3x mb-3 text-primary"></i>
+                        <h3>Уведомления</h3>
+                        <p>Получайте уведомления о новых событиях по вашим интересам</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div layout:fragment="scripts">
+        <script>
+            // Initialize any homepage specific JavaScript here
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Homepage loaded successfully');
+            });
+        </script>
+    </div>
+</body>
+</html>

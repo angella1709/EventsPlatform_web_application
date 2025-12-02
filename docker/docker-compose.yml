@@ -1,0 +1,9 @@
+services:
+  postgres-event:
+    image: postgres:16.1
+    environment:
+      - POSTGRES_DB=events_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"

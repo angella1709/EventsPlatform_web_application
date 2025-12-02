@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Отчет по статистике - Админ-панель</title>
+    <style>
+        .stat-card {
+            transition: transform 0.2s ease;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        .report-header {
+            background: #2c3e50 !important; /* Темно-синий вместо градиента */
+            border-radius: 10px;
+        }
+        .category-badge {
+            font-size: 0.8rem;
+        }
+        /* Новые цвета для карточек */
+        .card-bg-primary { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important; }
+        .card-bg-success { background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important; }
+        .card-bg-warning { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important; }
+        .card-bg-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Заголовок и навигация -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>Отчет по статистике платформы
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Админ-панель</a></li>
+                        <li class="breadcrumb-item active">Отчет</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Назад
+                </a>
+                <a th:href="@{/admin/download-pdf-report}" class="btn btn-success">
+                    <i class="fas fa-file-pdf me-2"></i>Скачать PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Шапка отчета - БЕЗ ГРАДИЕНТА -->
+        <div class="card report-header text-white mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2 class="card-title">EventsPlatform - Статистический отчет</h2>
+                        <p class="card-text mb-0">Полный обзор активности и эффективности платформы</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <p class="mb-1"><strong>Дата генерации:</strong> <span th:text="${reportDate}">25.11.2025 15:53</span></p>
+                        <p class="mb-0"><strong>Период:</strong> Все время</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основная статистика - БЕЛЫЕ ЦИФРЫ -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card card-bg-primary text-white">
+                    <div class="card-body text-center">
+                        <div class="stat-number text-white" th:text="${stats.totalUsers}">0</div>
+                        <p class="mb-0">Пользователей</p>
+                        <small>Зарегистрировано на платформе</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card card-bg-success text-white">
+                    <div class="card-body text-center">
+                        <div class="stat-number text-white" th:text="${stats.totalEvents}">0</div>
+                        <p class="mb-0">Мероприятий</p>
+                        <small>Всего создано</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card card-bg-warning text-white">
+                    <div class="card-body text-center">
+                        <div class="stat-number text-white" th:text="${stats.upcomingEvents}">0</div>
+                        <p class="mb-0">Предстоящих</p>
+                        <small>Активных мероприятий</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card card-bg-info text-white">
+                    <div class="card-body text-center">
+                        <div class="stat-number text-white" th:text="${stats.totalCategories}">0</div>
+                        <p class="mb-0">Категорий</p>
+                        <small>Доступно для мероприятий</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Активность и прогресс -->
+        <div class="row">
+            <!-- Левая колонка - Активность -->
+            <div class="col-md-6 mb-4">
+                <div class="card stat-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-users me-2"></i>Активность пользователей
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Комментарии:</span>
+                            <strong class="text-primary" th:text="${stats.totalComments}">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Сообщения в чатах:</span>
+                            <strong class="text-primary" th:text="${stats.totalChatMessages}">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Созданные задачи:</span>
+                            <strong class="text-primary" th:text="${stats.totalTasks}">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Элементы чек-листов:</span>
+                            <strong class="text-primary" th:text="${stats.totalChecklistItems}">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка - Прогресс выполнения -->
+            <div class="col-md-6 mb-4">
+                <div class="card stat-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tasks me-2"></i>Прогресс выполнения
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Задачи выполнены:</span>
+                                <strong th:text="${stats.completedTasksPercentage} + '%'">0%</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success"
+                                     th:style="'width: ' + ${stats.completedTasksPercentage} + '%;'"
+                                     th:attr="aria-valuenow=${stats.completedTasksPercentage}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Чек-листы выполнены:</span>
+                                <strong th:text="${stats.completedChecklistItemsPercentage} + '%'">0%</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info"
+                                     th:style="'width: ' + ${stats.completedChecklistItemsPercentage} + '%;'"
+                                     th:attr="aria-valuenow=${stats.completedChecklistItemsPercentage}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Среднее участников на мероприятие:</span>
+                            <strong class="text-success" th:text="${stats.averageParticipantsPerEvent}">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Популярные категории -->
+        <div class="row" th:if="${stats.mostPopularCategories}">
+            <div class="col-12">
+                <div class="card stat-card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tags me-2"></i>Популярные категории мероприятий
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div th:each="category : ${stats.mostPopularCategories}"
+                                 class="col-md-6 col-lg-4 mb-3">
+                                <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                    <span th:text="${category.name}">Категория</span>
+                                    <span class="badge bg-primary category-badge"
+                                          th:text="${category.count}">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автоматическое обновление прогресс-баров с анимацией
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                    bar.style.transition = 'width 1s ease-in-out';
+                }, 100);
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

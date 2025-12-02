@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Событие не найдено - EventsPlatform</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error-container {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row error-container">
+        <div class="col-md-6 text-center">
+            <h1 class="text-warning display-1">404</h1>
+            <h2 class="text-warning">Событие не найдено</h2>
+            <p class="lead mt-3" th:text="${errorMessage} ?: 'Запрошенное событие не существует или было удалено'">
+                Извините, запрошенное событие не существует или было удалено.
+            </p>
+            <div class="mt-4">
+                <a th:href="@{/events}" class="btn btn-primary me-2">К списку событий</a>
+                <a th:href="@{/}" class="btn btn-outline-secondary">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

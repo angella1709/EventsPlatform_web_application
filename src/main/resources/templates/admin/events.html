@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Управление мероприятиями - Админ-панель</title>
+    <style>
+        .event-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .image-placeholder {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .participants-count {
+            font-size: 0.875rem;
+        }
+        .action-buttons {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid py-4">
+        <!-- Заголовок и навигация -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-calendar-alt me-2 text-success"></i>Управление мероприятиями
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Админ-панель</a></li>
+                        <li class="breadcrumb-item active">Мероприятия</li>
+                    </ol>
+                </nav>
+            </div>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+        </div>
+
+        <!-- Сообщения -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Статистика мероприятий -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${totalEvents != null ? totalEvents : 0}">0</h4>
+                                <p class="mb-0">Всего мероприятий</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-calendar-alt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${upcomingEvents != null ? upcomingEvents : 0}">0</h4>
+                                <p class="mb-0">Ближайшие</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0" th:text="${activeEvents != null ? activeEvents : 0}">0</h4>
+                                <p class="mb-0">Активные сейчас</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-play-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таблица мероприятий -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Все мероприятия
+                    <span class="badge bg-primary ms-2" th:text="${events.size()}">0</span>
+                </h5>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm" placeholder="Поиск..." id="searchEvents">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="filterEvents()">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Изображение</th>
+                            <th>Название</th>
+                            <th>Организатор</th>
+                            <th>Дата и время</th>
+                            <th>Место</th>
+                            <th>Участники</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="event : ${events}" class="event-row">
+                            <td>
+                                <th:block th:if="${event.images != null and not #lists.isEmpty(event.images)}">
+                                    <img th:src="@{/images/{filename}(filename=${event.images.iterator().next().filename})}"
+                                         class="event-image"
+                                         th:alt="${event.name}">
+                                </th:block>
+                                <th:block th:if="${event.images == null or #lists.isEmpty(event.images)}">
+                                    <div class="image-placeholder">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </th:block>
+                            </td>
+                            <td>
+                                <div class="fw-medium" th:text="${event.name}"></div>
+                                <small class="text-muted" th:text="${event.description != null ? (#strings.abbreviate(event.description, 50)) : 'Нет описания'}"></small>
+                            </td>
+                            <td>
+                                <div class="fw-medium" th:text="${event.creator.username}"></div>
+                                <small class="text-muted" th:text="${event.creator.email}"></small>
+                            </td>
+                            <td>
+                                <div class="fw-medium" th:text="${#temporals.format(event.startTime, 'dd.MM.yyyy')}"></div>
+                                <small class="text-muted" th:text="${#temporals.format(event.startTime, 'HH:mm')}"></small>
+                            </td>
+                            <td>
+                                <div th:text="${event.location.city}"></div>
+                                <small class="text-muted" th:text="${event.location.street}"></small>
+                            </td>
+                            <td>
+                                <div class="participants-count">
+                                    <i class="fas fa-users text-muted me-1"></i>
+                                    <span th:text="${event.participants.size()}">0</span>
+                                </div>
+                            </td>
+                            <td>
+                                <th:block th:if="${event.startTime != null and event.endTime != null}">
+                                    <th:block th:with="now=${T(java.time.Instant).now()}">
+                                        <th:block th:if="${event.startTime.isAfter(now)}">
+                                            <span class="badge bg-success">Предстоящее</span>
+                                        </th:block>
+                                        <th:block th:if="${event.startTime.isBefore(now) and event.endTime.isAfter(now)}">
+                                            <span class="badge bg-primary">Активное</span>
+                                        </th:block>
+                                        <th:block th:if="${event.endTime.isBefore(now)}">
+                                            <span class="badge bg-secondary">Завершено</span>
+                                        </th:block>
+                                    </th:block>
+                                </th:block>
+                                <th:block th:if="${event.startTime == null or event.endTime == null}">
+                                    <span class="badge bg-warning">Неизвестно</span>
+                                </th:block>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm action-buttons">
+                                    <a th:href="@{/event/details/{id}(id=${event.id})}"
+                                       class="btn btn-outline-primary"
+                                       title="Просмотреть детали"
+                                       target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-outline-danger"
+                                            th:data-event-id="${event.id}"
+                                            th:data-event-name="${event.name}"
+                                            onclick="confirmDeleteEvent(this)"
+                                            title="Удалить мероприятие">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(events)}">
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                <p>Нет мероприятий</p>
+                                <a th:href="@{/}" class="btn btn-primary btn-sm">На главную</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автоматическое скрытие alert
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+
+            // Поиск мероприятий
+            const searchInput = document.getElementById('searchEvents');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterEvents);
+            }
+        });
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('searchEvents').value.toLowerCase();
+            const rows = document.querySelectorAll('.event-row');
+
+            rows.forEach(row => {
+                const eventName = row.querySelector('td:nth-child(2) .fw-medium').textContent.toLowerCase();
+                const organizer = row.querySelector('td:nth-child(3) .fw-medium').textContent.toLowerCase();
+                const location = row.querySelector('td:nth-child(5) div').textContent.toLowerCase();
+
+                if (eventName.includes(searchTerm) || organizer.includes(searchTerm) || location.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function confirmDeleteEvent(eventId, eventName) {
+            if (confirm(`Вы уверены, что хотите удалить мероприятие "${eventName}"? Это действие нельзя отменить. Все связанные данные (чаты, задачи, комментарии) также будут удалены.`)) {
+                // Создаем форму для отправки POST запроса
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/events/${eventId}/delete`;
+
+                // Добавляем CSRF токен
+                const csrfToken = document.querySelector('input[name="_csrf"]');
+                if (csrfToken) {
+                    form.appendChild(csrfToken.cloneNode());
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
