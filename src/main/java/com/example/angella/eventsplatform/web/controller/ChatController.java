@@ -4,7 +4,6 @@ import com.example.angella.eventsplatform.aop.AccessCheckType;
 import com.example.angella.eventsplatform.aop.AccessAnnotation;
 import com.example.angella.eventsplatform.entity.ChatMessage;
 import com.example.angella.eventsplatform.entity.Image;
-import com.example.angella.eventsplatform.exception.EntityNotFoundException;
 import com.example.angella.eventsplatform.mapper.ChatMessageMapper;
 import com.example.angella.eventsplatform.model.PageModel;
 import com.example.angella.eventsplatform.repository.ChatMessageRepository;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.angella.eventsplatform.mapper.ImageMapper;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,7 +93,7 @@ public class ChatController {
     public ResponseEntity<ChatMessageDto> addImageToMessage(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long messageId,
-            @RequestPart("image") MultipartFile imageFile) {  // Измените @RequestParam на @RequestPart
+            @RequestPart("image") MultipartFile imageFile) {
 
         ChatMessage message = chatService.addImageToMessage(
                 messageId,

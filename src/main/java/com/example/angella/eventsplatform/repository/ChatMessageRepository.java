@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     Page<ChatMessage> findAllByEventId(Long eventId, Pageable pageable);
+
     boolean existsByIdAndEventIdAndAuthorId(Long id, Long eventId, Long authorId);
 
     boolean existsByIdAndAuthorId(Long messageId, Long userId);

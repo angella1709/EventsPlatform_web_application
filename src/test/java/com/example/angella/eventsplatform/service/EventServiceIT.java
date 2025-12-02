@@ -133,7 +133,7 @@ class EventServiceIT extends ServiceIntegrationTest {
     private Event buildTestEvent() {
         Event event = new Event();
         event.setName("Test Event");
-        event.setDescription("Test Event Description"); // ДОБАВЛЕНО поле description
+        event.setDescription("Test Event Description");
         event.setStartTime(Instant.now().plusSeconds(3600));
         event.setEndTime(Instant.now().plusSeconds(7200));
         event.setCategories(Set.of(testCategory));

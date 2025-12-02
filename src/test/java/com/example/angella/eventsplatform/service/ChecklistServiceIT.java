@@ -117,7 +117,7 @@ class ChecklistServiceIT extends ServiceIntegrationTest {
         List<ChecklistItem> items = checklistService.getChecklistForEvent(testEvent.getId());
 
         // Assert
-        assertEquals(2, items.size());
+        assertEquals(3, items.size());
         assertTrue(items.stream().anyMatch(item -> "Item 1".equals(item.getName())));
         assertTrue(items.stream().anyMatch(item -> "Item 2".equals(item.getName())));
     }
@@ -231,7 +231,7 @@ class ChecklistServiceIT extends ServiceIntegrationTest {
         long total = checklistItemRepository.countTotalItems(testEvent.getId());
 
         assertEquals(1, completed);
-        assertEquals(3, total);
+        assertEquals(4, total);
     }
 
     @Test

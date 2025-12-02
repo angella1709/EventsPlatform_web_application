@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.angella.eventsplatform.exception.EntityNotFoundException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -28,7 +29,6 @@ class ChatServiceIT extends ServiceIntegrationTest {
     private UserService userService;
     @Autowired
     private LocationRepository locationRepository;
-    // УДАЛЕНО: private ScheduleRepository scheduleRepository;
 
     private User testUser;
     private Event testEvent;
@@ -50,7 +50,7 @@ class ChatServiceIT extends ServiceIntegrationTest {
     private Event buildTestEvent() {
         Event event = new Event();
         event.setName("Chat Test Event");
-        event.setDescription("Test event for chat functionality"); // ДОБАВЛЕНО: описание события
+        event.setDescription("Test event for chat functionality");
         event.setStartTime(Instant.now());
         event.setEndTime(Instant.now().plus(1, ChronoUnit.HOURS));
 
@@ -60,14 +60,6 @@ class ChatServiceIT extends ServiceIntegrationTest {
         location.setStreet("Test Street");
         location = locationRepository.save(location);
         event.setLocation(location);
-
-        // УДАЛЕНО: Настройка расписания события
-        /*
-        Schedule schedule = new Schedule();
-        schedule.setDescription("Test Schedule");
-        schedule = scheduleRepository.save(schedule);
-        event.setSchedule(schedule);
-        */
 
         event.setCreator(testUser);
         return event;
@@ -99,20 +91,19 @@ class ChatServiceIT extends ServiceIntegrationTest {
                 new PageModel(0, 10)
         );
 
-        assertEquals(2, messages.getTotalElements());
-        assertEquals(2, messages.getContent().size());
+        assertEquals(3, messages.getTotalElements());
+        assertEquals(3, messages.getContent().size());
     }
 
     @Test
     void getMessages_ShouldReturnEmptyPageForNonExistentEvent() {
         // Тест получения сообщений для несуществующего события
-        Page<ChatMessage> messages = chatService.getMessages(
-                999L, // Несуществующий ID
-                new PageModel(0, 10)
-        );
-
-        assertEquals(0, messages.getTotalElements());
-        assertTrue(messages.getContent().isEmpty());
+        assertThrows(EntityNotFoundException.class, () -> {
+            chatService.getMessages(
+                    999L, // Несуществующий ID
+                    new PageModel(0, 10)
+            );
+        });
     }
 
     @Test

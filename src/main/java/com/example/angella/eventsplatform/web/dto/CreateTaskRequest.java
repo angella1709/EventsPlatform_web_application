@@ -10,5 +10,5 @@ public class CreateTaskRequest {
     @Size(max = 500, message = "Максимальная длина описания — 500 символов")
     private String description;
 
-    private Long assignedUserId; // ДОБАВЛЕНО
+    private Long assignedUserId;
 }

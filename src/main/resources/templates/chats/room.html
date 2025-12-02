@@ -648,7 +648,7 @@
                 sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 sendButton.disabled = true;
 
-                // 1. Создаем сообщение
+                // Создаем сообщение
                 const messageResponse = await fetch('/api/v1/chat?eventId=' + eventId, {
                     method: 'POST',
                     headers: {
@@ -665,17 +665,17 @@
 
                 const message = await messageResponse.json();
 
-                // 2. Прикрепляем изображения, если они есть
+                // Прикрепляем изображения, если они есть
                 if (selectedImages.length > 0) {
                     for (const file of selectedImages) {
                         await uploadImageToMessage(message.id, file);
                     }
                 }
 
-                // 3. Добавляем сообщение в чат
+                // Добавляем сообщение в чат
                 addMessageToChat(message);
 
-                // 4. Очищаем форму
+                // Очищаем форму
                 messageInput.value = '';
                 document.getElementById('messageCounter').textContent = '0';
                 document.getElementById('imagePreview').innerHTML = '';

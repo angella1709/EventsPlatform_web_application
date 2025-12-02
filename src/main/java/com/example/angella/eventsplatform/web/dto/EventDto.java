@@ -14,19 +14,11 @@ import java.util.Set;
 public class EventDto {
 
     private Long id;
-
     private String name;
-
     private Instant startTime;
-
     private Instant endTime;
-
     private Set<CategoryDto> categories = new HashSet<>();
-
     private String description;
-
     private LocationDto location;
-
     private UserDto creator;
-
 }

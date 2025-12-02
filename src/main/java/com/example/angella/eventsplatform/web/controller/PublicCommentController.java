@@ -27,5 +27,4 @@ public class PublicCommentController {
                 commentMapper.toDtoList(commentService.findAllByEventId(eventId))
         );
     }
-
 }

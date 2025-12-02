@@ -29,7 +29,7 @@
                             <span th:text="${warning}">Предупреждение</span>
                         </div>
 
-                        <!-- ИСПРАВЛЕНИЕ: добавлен enctype="multipart/form-data" -->
+                        <!-- добавлен enctype="multipart/form-data" -->
                         <form id="createEventForm" th:action="@{/event/create}" method="post"
                               class="needs-validation" novalidate enctype="multipart/form-data">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -117,7 +117,7 @@
                                 <div class="invalid-feedback">Добавьте описание мероприятия</div>
                             </div>
 
-                            <!-- ИСПРАВЛЕНИЕ: поле для загрузки изображения -->
+                            <!-- поле для загрузки изображения -->
                             <div class="mb-3">
                                 <label for="eventImage" class="form-label">Изображение мероприятия</label>
                                 <input type="file" class="form-control" id="eventImage" name="eventImage"

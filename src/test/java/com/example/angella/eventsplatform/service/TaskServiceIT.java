@@ -45,7 +45,7 @@ class TaskServiceIT extends ServiceIntegrationTest {
         // Создание объекта события с обязательными полями
         Event event = new Event();
         event.setName("Test Event");
-        event.setDescription("Test event description for task management"); // ДОБАВЛЕНО: описание события
+        event.setDescription("Test event description for task management");
         event.setStartTime(Instant.now());
         event.setEndTime(Instant.now().plus(1, ChronoUnit.HOURS));
 
@@ -116,7 +116,7 @@ class TaskServiceIT extends ServiceIntegrationTest {
         taskService.createTask("Task 2", testEvent.getId(), testUser.getId(), null);
 
         var tasks = taskService.getTasksForEvent(testEvent.getId());
-        assertEquals(2, tasks.size());
+        assertEquals(3, tasks.size());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.example.angella.eventsplatform.web.controller;
 
-import com.example.angella.eventsplatform.entity.User;
 import com.example.angella.eventsplatform.mapper.UserMapper;
 import com.example.angella.eventsplatform.service.UserService;
 import com.example.angella.eventsplatform.web.dto.CreateUserRequest;
@@ -8,7 +7,6 @@ import com.example.angella.eventsplatform.web.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,5 +28,4 @@ public class PublicUserController {
         var createdUser = userService.registerUser(userMapper.toEntity(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(createdUser));
     }
-
 }

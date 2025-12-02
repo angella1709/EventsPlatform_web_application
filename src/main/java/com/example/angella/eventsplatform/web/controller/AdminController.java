@@ -142,7 +142,7 @@ public class AdminController {
         try {
             List<ChecklistTemplate> templates = templateService.getAllTemplates();
 
-            // ДОБАВЛЕНО: логирование для отладки
+            // логирование для отладки
             log.info("Found {} templates in database", templates.size());
             templates.forEach(template ->
                     log.info("Template: id={}, name={}, itemsCount={}",

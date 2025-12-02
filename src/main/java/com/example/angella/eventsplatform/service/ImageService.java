@@ -70,7 +70,7 @@ public class ImageService {
                 throw new AccessDeniedException("Only event participants can upload images");
             }
 
-            // ИСПРАВЛЕНИЕ: Сохраняем изображение и связываем с событием
+            // Сохраняем изображение и связываем с событием
             Image image = saveImage(file, null, event, null);
 
             // Обновляем связь события с изображением

@@ -71,14 +71,14 @@ public class ChatWebSocketController {
         log.info("=== WEBSOCKET START: eventId={}, user={}, hasImageId={} ===",
                 eventId, principal.getName(), imageId != null);
 
-        // 1. Создаем сообщение
+        // Создаем сообщение
         ChatMessage savedMessage = chatService.createMessage(
                 content, eventId, getUserId(principal)
         );
 
         log.info("1. Message created with ID: {}", savedMessage.getId());
 
-        // 2. Если есть imageId, привязываем изображение к сообщению
+        // Если есть imageId, привязываем изображение к сообщению
         if (imageId != null) {
             try {
                 log.info("2. Attaching image {} to message {}", imageId, savedMessage.getId());
@@ -109,19 +109,19 @@ public class ChatWebSocketController {
             }
         }
 
-        // 3. Загружаем сообщение с изображениями
+        // Загружаем сообщение с изображениями
         ChatMessage messageWithImages = chatMessageRepository
                 .findByIdWithImages(savedMessage.getId())
                 .orElse(savedMessage);
 
-        // 4. Проверяем результат
+        // Проверяем результат
         int imageCount = 0;
         if (messageWithImages.getImages() != null) {
             imageCount = messageWithImages.getImages().size();
             log.info("4. Found {} images in loaded message", imageCount);
         }
 
-        // 5. Возвращаем DTO
+        // Возвращаем DTO
         ChatMessageDto dto = chatMessageMapper.toDto(messageWithImages);
         log.info("5. Returning DTO with {} images",
                 dto.getImages() != null ? dto.getImages().size() : 0);

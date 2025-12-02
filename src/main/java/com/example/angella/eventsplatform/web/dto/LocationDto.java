@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 public class LocationDto {
 
     private Long id;
-
     private String city;
-
     private String street;
-
 }

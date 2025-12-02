@@ -14,7 +14,7 @@ public class AuthUtils {
             return details.getId();
         }
 
-        throw new ServerException("UserDetails is not instanceof AppUserDetails");
+        throw new ServerException("UserDetails is not an instance of AppUserDetails");
     }
 
     public static AppUserDetails getAuthenticatedUser() {
@@ -24,7 +24,6 @@ public class AuthUtils {
             return details;
         }
 
-        throw new ServerException("Principal in security context is not instanceof AppUserDetails");
+        throw new ServerException("The principal object in the security context is not an instance of AppUserDetails");
     }
-
 }

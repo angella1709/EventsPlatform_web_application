@@ -50,7 +50,7 @@ public class TaskController {
                 request.getDescription(),
                 eventId,
                 AuthUtils.getCurrentUserId(userDetails),
-                request.getAssignedUserId() // ДОБАВЛЕНО
+                request.getAssignedUserId()
         );
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(taskMapper.toDto(createdTask));

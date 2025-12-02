@@ -25,5 +25,4 @@ public class PublicCategoryController {
     public ResponseEntity<List<CategoryDto>> getCategories() {
         return ResponseEntity.ok(categoryMapper.toDtoList(categoryService.findAll()));
     }
-
 }

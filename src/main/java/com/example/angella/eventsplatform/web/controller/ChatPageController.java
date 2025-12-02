@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 import com.example.angella.eventsplatform.mapper.ChatMessageMapper;
-import com.example.angella.eventsplatform.model.PageModel;
 import com.example.angella.eventsplatform.service.ChatService;
 
 import java.util.stream.Collectors;

@@ -6,7 +6,6 @@ import com.example.angella.eventsplatform.entity.Image;
 import com.example.angella.eventsplatform.entity.User;
 import com.example.angella.eventsplatform.exception.EntityNotFoundException;
 import com.example.angella.eventsplatform.mapper.EventMapper;
-import com.example.angella.eventsplatform.repository.EventRepository;
 import com.example.angella.eventsplatform.service.*;
 import com.example.angella.eventsplatform.web.dto.CreateEventRequest;
 import com.example.angella.eventsplatform.web.dto.UpdateEventRequest;
@@ -35,9 +34,6 @@ public class WebController {
     private final CategoryService categoryService;
     private final UserService userService;
     private final EventMapper eventMapper;
-    private final EventRepository eventRepository;
-    private final TaskService taskService;
-    private final ChecklistService checklistService;
     private final CommentService commentService;
     private final ImageService imageService;
 
@@ -318,7 +314,7 @@ public class WebController {
             Event event = eventMapper.toEntity(request);
             Event savedEvent = eventService.create(event, user.getId());
 
-            // ИСПРАВЛЕНИЕ: Правильная обработка изображения
+            // Правильная обработка изображения
             if (eventImage != null && !eventImage.isEmpty()) {
                 try {
                     // Сохраняем изображение и связываем с событием

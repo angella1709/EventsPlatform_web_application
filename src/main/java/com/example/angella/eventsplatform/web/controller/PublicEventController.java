@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/public/events") // Изменено для согласованности
+@RequestMapping("/api/v1/public/events")
 @RequiredArgsConstructor
 public class PublicEventController {
 
