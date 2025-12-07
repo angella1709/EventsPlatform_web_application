@@ -55,7 +55,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/.well-known/**").permitAll()
 
                                 // WebSocket endpoints
-                                .requestMatchers("/ws/**", "/topic/**", "/app/**", "/user/**").permitAll()
+                                .requestMatchers("/ws/**", "/topic/**", "/app/**", "/user/**").authenticated()
 
                                 // API endpoints (должны быть после публичных)
                                 .requestMatchers("/api/v1/**").authenticated()

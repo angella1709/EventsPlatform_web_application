@@ -64,71 +64,94 @@ public class ChatWebSocketController {
                                       @Payload Map<String, Object> payload,
                                       Principal principal) {
 
-        String content = (String) payload.get("content");
-        Long imageId = payload.get("imageId") != null ?
-                Long.valueOf(payload.get("imageId").toString()) : null;
+        log.info("📨 WebSocket сообщение получено. Event: {}, Payload: {}", eventId, payload);
 
-        log.info("=== WEBSOCKET START: eventId={}, user={}, hasImageId={} ===",
-                eventId, principal.getName(), imageId != null);
+        try {
+            // Извлекаем данные
+            String content = (String) payload.get("content");
+            Long userId = getUserId(principal);
 
-        // Создаем сообщение
-        ChatMessage savedMessage = chatService.createMessage(
-                content, eventId, getUserId(principal)
-        );
+            // Проверяем контент
+            if (content == null || content.trim().isEmpty()) {
+                content = "📷 Изображение";
+            }
 
-        log.info("1. Message created with ID: {}", savedMessage.getId());
+            log.info("Создание сообщения: user={}, event={}, content={}",
+                    userId, eventId, content.substring(0, Math.min(content.length(), 50)));
 
-        // Если есть imageId, привязываем изображение к сообщению
-        if (imageId != null) {
+            // Создаем сообщение
+            ChatMessage savedMessage = chatService.createMessage(content, eventId, userId);
+            log.info("Сообщение создано, ID: {}", savedMessage.getId());
+
+            // Обрабатываем изображения если есть
+            Object imageIdsObj = payload.get("imageIds");
+            if (imageIdsObj instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Integer> imageIdsInt = (List<Integer>) imageIdsObj;
+
+                if (!imageIdsInt.isEmpty()) {
+                    log.info("Прикрепляем {} изображений к сообщению {}",
+                            imageIdsInt.size(), savedMessage.getId());
+
+                    List<Long> imageIds = imageIdsInt.stream()
+                            .map(Long::valueOf)
+                            .collect(Collectors.toList());
+
+                    attachImagesToMessage(savedMessage.getId(), imageIds, userId);
+                }
+            }
+
+            // Загружаем сообщение с изображениями
+            ChatMessage messageWithImages = chatMessageRepository
+                    .findByIdWithImages(savedMessage.getId())
+                    .orElse(savedMessage);
+
+            log.info("Сообщение готово к отправке. Изображений: {}",
+                    messageWithImages.getImages() != null ?
+                            messageWithImages.getImages().size() : 0);
+
+            // Преобразуем в DTO и отправляем
+            return chatMessageMapper.toDto(messageWithImages);
+
+        } catch (Exception e) {
+            log.error("Ошибка обработки WebSocket сообщения:", e);
+            // Возвращаем пустой DTO или сообщение об ошибке
+            ChatMessageDto errorDto = new ChatMessageDto();
+            errorDto.setContent("Ошибка отправки сообщения");
+            errorDto.setAuthor("Система");
+            errorDto.setCreatedAt(Instant.now());
+            return errorDto;
+        }
+    }
+
+    private void attachImagesToMessage(Long messageId, List<Long> imageIds, Long userId) {
+        for (Long imageId : imageIds) {
             try {
-                log.info("2. Attaching image {} to message {}", imageId, savedMessage.getId());
+                log.debug("Прикрепление изображения {} к сообщению {}", imageId, messageId);
 
-                // Находим изображение
                 Image image = imageRepository.findById(imageId)
-                        .orElseThrow(() -> new EntityNotFoundException("Image not found: " + imageId));
+                        .orElseThrow(() -> {
+                            log.warn("Изображение {} не найдено", imageId);
+                            return new EntityNotFoundException("Изображение не найдено: " + imageId);
+                        });
 
-                // Привязываем к сообщению
-                image.setChatMessage(savedMessage);
+                // Проверяем права (только владелец изображения может прикрепить)
+                if (!image.getUser().getId().equals(userId)) {
+                    log.warn("Пользователь {} пытается прикрепить чужое изображение {}",
+                            userId, imageId);
+                    continue;
+                }
+
+                // Прикрепляем к сообщению
+                image.setChatMessage(chatMessageRepository.getReferenceById(messageId));
                 imageRepository.save(image);
 
-                log.info("3. Image attached successfully");
-
-                // После прикрепления изображения отправляем команду обновления
-                Map<String, Object> refreshCommand = new HashMap<>();
-                refreshCommand.put("action", "FORCE_REFRESH");
-                refreshCommand.put("messageId", savedMessage.getId());
-                refreshCommand.put("eventId", eventId);
-                refreshCommand.put("timestamp", System.currentTimeMillis());
-
-                // Отправляем отдельную команду для обновления
-                messagingTemplate.convertAndSend("/topic/chat/" + eventId + "/refresh", refreshCommand);
-                log.info("4. Sent refresh command for chat");
+                log.info("✓ Изображение {} прикреплено к сообщению {}", imageId, messageId);
 
             } catch (Exception e) {
-                log.error("Failed to attach image: {}", e.getMessage());
+                log.error("Ошибка прикрепления изображения {}: {}", imageId, e.getMessage());
             }
         }
-
-        // Загружаем сообщение с изображениями
-        ChatMessage messageWithImages = chatMessageRepository
-                .findByIdWithImages(savedMessage.getId())
-                .orElse(savedMessage);
-
-        // Проверяем результат
-        int imageCount = 0;
-        if (messageWithImages.getImages() != null) {
-            imageCount = messageWithImages.getImages().size();
-            log.info("4. Found {} images in loaded message", imageCount);
-        }
-
-        // Возвращаем DTO
-        ChatMessageDto dto = chatMessageMapper.toDto(messageWithImages);
-        log.info("5. Returning DTO with {} images",
-                dto.getImages() != null ? dto.getImages().size() : 0);
-
-        log.info("=== WEBSOCKET END ===");
-
-        return dto;
     }
 
     @MessageMapping("/tasks/{eventId}/update")

@@ -5,6 +5,7 @@ import com.example.angella.eventsplatform.exception.AccessDeniedException;
 import com.example.angella.eventsplatform.exception.EntityNotFoundException;
 import com.example.angella.eventsplatform.repository.EventRepository;
 import com.example.angella.eventsplatform.repository.ImageRepository;
+import com.example.angella.eventsplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -28,11 +30,12 @@ import java.util.UUID;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
 
     @Lazy  // Ленивая зависимость чтобы разорвать цикл
     private final UserService userService;
 
-    private final EventRepository eventRepository;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -228,5 +231,51 @@ public class ImageService {
         defaultAvatar.setFilePath("system/default-avatar.png");
 
         return imageRepository.save(defaultAvatar);
+    }
+
+    public Image saveTemporaryImage(MultipartFile imageFile, Long eventId, Long userId)
+            throws IOException {
+
+        // Находим событие и пользователя
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // Генерируем уникальное имя файла
+        String originalFilename = imageFile.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        String filename = UUID.randomUUID().toString() + fileExtension;
+
+        // Создаем сущность Image
+        Image image = new Image();
+        image.setFilename(filename);
+        image.setOriginalFilename(originalFilename);
+        image.setContentType(imageFile.getContentType());
+        image.setSize(imageFile.getSize());
+        image.setFilePath(uploadDir + "/" + filename);
+        image.setEvent(event);
+        image.setUser(user);
+        // chatMessage = null (привяжем позже)
+
+        // Создаем директорию если не существует
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Сохраняем файл на диск
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        log.info("Файл сохранен: {}", filePath);
+
+        // Сохраняем в БД
+        return imageRepository.save(image);
     }
 }

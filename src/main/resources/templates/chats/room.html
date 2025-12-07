@@ -642,112 +642,217 @@
         async function sendMessageWithImages(content) {
             const sendButton = document.getElementById('sendMessage');
             const messageInput = document.getElementById('messageInput');
-            const originalHtml = sendButton.innerHTML;
 
             try {
+                // Показываем индикатор загрузки
+                const originalHtml = sendButton.innerHTML;
                 sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 sendButton.disabled = true;
 
-                // Создаем сообщение
-                const messageResponse = await fetch('/api/v1/chat?eventId=' + eventId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
-                    },
-                    body: JSON.stringify({ content: content || (selectedImages.length > 0 ? '📷 Изображение' : '') })
+                // WebSocket подключен?
+                if (!stompClient || !stompClient.connected) {
+                    alert('WebSocket не подключен. Попробуйте обновить страницу.');
+                    // Fallback: отправляем через REST
+                    await sendViaRest(content);
+                    return;
+                }
+
+                // сообщение не пустое?
+                const messageContent = content || (selectedImages.length > 0 ? '📷 Изображение' : '');
+                if (!messageContent.trim() && selectedImages.length === 0) {
+                    alert('Введите сообщение или выберите изображение');
+                    return;
+                }
+
+                // ШАГ 1: Загружаем изображения ЧЕРЕЗ REST (если есть)
+                let imageIds = [];
+                if (selectedImages.length > 0) {
+                    imageIds = await uploadImagesSeparately();
+                }
+
+                // ШАГ 2: Отправляем сообщение через WEBSOCKET
+                console.log('Отправка через WebSocket:', {
+                    eventId: eventId,
+                    content: messageContent,
+                    imageIds: imageIds
                 });
 
-                if (!messageResponse.ok) {
-                    const errorText = await messageResponse.text();
-                    throw new Error(errorText || 'Не удалось создать сообщение');
-                }
+                stompClient.send(
+                    `/app/chat/${eventId}/send`,
+                    {}, // заголовки
+                    JSON.stringify({
+                        content: messageContent,
+                        imageIds: imageIds
+                    })
+                );
 
-                const message = await messageResponse.json();
+                console.log('Сообщение отправлено через WebSocket');
 
-                // Прикрепляем изображения, если они есть
-                if (selectedImages.length > 0) {
-                    for (const file of selectedImages) {
-                        await uploadImageToMessage(message.id, file);
-                    }
-                }
-
-                // Добавляем сообщение в чат
-                addMessageToChat(message);
-
-                // Очищаем форму
+                // ШАГ 3: Очищаем форму
                 messageInput.value = '';
                 document.getElementById('messageCounter').textContent = '0';
                 document.getElementById('imagePreview').innerHTML = '';
                 selectedImages = [];
 
             } catch (error) {
-                console.error('Error sending message with images:', error);
-                alert('Ошибка при отправке сообщения: ' + error.message);
-            } finally {
-                sendButton.innerHTML = originalHtml;
-                sendButton.disabled = false;
-            }
-        }
+                console.error('Ошибка отправки:', error);
+                alert('Ошибка отправки: ' + error.message);
 
-        // Загрузка изображения к сообщению
-        async function uploadImageToMessage(messageId, file) {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            try {
-                const response = await fetch(`/api/v1/chat/${messageId}/images`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Failed to upload image:', errorText);
+                // Fallback: пытаемся отправить через REST
+                try {
+                    await sendViaRest(content);
+                } catch (fallbackError) {
+                    console.error('Fallback тоже не сработал:', fallbackError);
                 }
 
-                return response.ok;
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                return false;
+            } finally {
+                // Восстанавливаем кнопку
+                if (sendButton) {
+                    sendButton.innerHTML = originalHtml || '<i class="fas fa-paper-plane"></i>';
+                    sendButton.disabled = false;
+                }
             }
         }
 
-        // WebSocket соединение
+        // Функция для загрузки изображений через REST API
+        async function uploadImagesSeparately() {
+            const imageIds = [];
+
+            for (let i = 0; i < selectedImages.length; i++) {
+                const file = selectedImages[i];
+
+                try {
+                    // Создаем FormData для каждого файла
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    console.log(`Загрузка изображения ${i + 1}/${selectedImages.length}:`, file.name);
+
+                    // Отправляем на сервер
+                    const response = await fetch(`/api/v1/images/upload?eventId=${eventId}`, {
+                        method: 'POST',
+                        headers: {
+                            // CSRF токен БЕЗ Content-Type для FormData!
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
+                        },
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Ошибка загрузки ${file.name}: ${errorText}`);
+                    }
+
+                    const imageData = await response.json();
+                    imageIds.push(imageData.id);
+                    console.log(`✓ Изображение загружено, ID: ${imageData.id}`);
+
+                } catch (error) {
+                    console.error(`Ошибка загрузки изображения ${file.name}:`, error);
+                }
+            }
+
+            return imageIds;
+        }
+
+        // Fallback: отправка через REST если WebSocket не работает
+        async function sendViaRest(content) {
+            console.log('Используем REST fallback...');
+
+            const messageContent = content || (selectedImages.length > 0 ? '📷 Изображение' : '');
+
+            // Отправляем сообщение
+            const response = await fetch('/api/v1/chat?eventId=' + eventId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
+                },
+                body: JSON.stringify({ content: messageContent })
+            });
+
+            if (!response.ok) {
+                throw new Error('REST отправка не удалась');
+            }
+
+            const message = await response.json();
+
+            // Загружаем изображения отдельно
+            if (selectedImages.length > 0) {
+                for (const file of selectedImages) {
+                    await uploadImageToMessage(message.id, file);
+                }
+            }
+
+            // Сообщение уже добавится через WebSocket или при следующей загрузке
+            return message;
+        }
+
+        // Функция для обработки ошибок WebSocket
+        function handleWebSocketError(error) {
+            console.error('WebSocket ошибка:', error);
+
+            // Показываем уведомление пользователю
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+            errorDiv.style.top = '20px';
+            errorDiv.style.right = '20px';
+            errorDiv.style.zIndex = '9999';
+            errorDiv.innerHTML = `
+        <strong>⚠️ WebSocket ошибка</strong>
+        <p>Соединение с сервером потеряно. Сообщения могут отправляться с задержкой.</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+            document.body.appendChild(errorDiv);
+
+            // Автоматически скрыть через 5 секунд
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
         function initializeWebSocket() {
             try {
                 const socket = new SockJS('/ws');
                 stompClient = Stomp.over(socket);
 
+                // Отключить отладочный вывод (опционально)
+                stompClient.debug = null;
+
                 stompClient.connect({}, function(frame) {
-                    console.log('Connected: ' + frame);
+                    console.log('WebSocket подключен: ' + frame);
 
                     // Подписка на сообщения чата
                     stompClient.subscribe('/topic/chat/' + eventId, function(message) {
-                        const chatMessage = JSON.parse(message.body);
-                        addMessageToChat(chatMessage);
+                        try {
+                            const chatMessage = JSON.parse(message.body);
+                            console.log('📥 Получено сообщение через WebSocket:', chatMessage);
+                            addMessageToChat(chatMessage);
+                        } catch (e) {
+                            console.error('Ошибка парсинга сообщения:', e);
+                        }
                     });
 
-                    // Подписка на обновления задач
-                    stompClient.subscribe('/topic/tasks/' + eventId, function(message) {
-                        const tasks = JSON.parse(message.body);
-                        updateTasksList(tasks);
+                    // Подписка на ошибки
+                    stompClient.subscribe('/user/queue/errors', function(message) {
+                        const error = JSON.parse(message.body);
+                        console.error('Ошибка от сервера:', error);
+                        alert('Ошибка: ' + error.message);
                     });
 
-                    // Подписка на обновления списка
-                    stompClient.subscribe('/topic/checklist/' + eventId, function(message) {
-                        const checklist = JSON.parse(message.body);
-                        updateChecklistList(checklist);
-                    });
                 }, function(error) {
-                    console.error('WebSocket connection error:', error);
-                    console.log('Continuing without WebSocket support');
+                    console.error('WebSocket ошибка подключения:', error);
+                    handleWebSocketError(error);
+
+                    // Пытаемся переподключиться через 5 секунд
+                    setTimeout(initializeWebSocket, 5000);
                 });
+
             } catch (error) {
-                console.error('WebSocket initialization error:', error);
+                console.error('Ошибка инициализации WebSocket:', error);
+                handleWebSocketError(error);
             }
         }
 
