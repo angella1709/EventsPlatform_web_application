@@ -87,7 +87,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-            // 4. ✅ КЛЮЧЕВАЯ ПРОВЕРКА: участник ли?
+            // 4. участник ли?
             boolean isParticipant = eventRepository.existsByIdAndParticipantsId(eventId, user.getId());
 
             if (!isParticipant) {
@@ -97,7 +97,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             }
 
             log.debug("Allowed subscription: user {} to {} {}", username, type, eventId);
-            return originalMessage; // ✅ Возвращаем оригинальное сообщение
+            return originalMessage; // Возвращаем оригинальное сообщение
 
         } catch (NumberFormatException e) {
             log.warn("Invalid event ID in destination: {}", destination);

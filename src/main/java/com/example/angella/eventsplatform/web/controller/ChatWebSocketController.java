@@ -64,7 +64,7 @@ public class ChatWebSocketController {
                                       @Payload Map<String, Object> payload,
                                       Principal principal) {
 
-        log.info("📨 WebSocket сообщение получено. Event: {}, Payload: {}", eventId, payload);
+        log.info("WebSocket сообщение получено. Event: {}, Payload: {}", eventId, payload);
 
         try {
             // Извлекаем данные
@@ -73,7 +73,7 @@ public class ChatWebSocketController {
 
             // Проверяем контент
             if (content == null || content.trim().isEmpty()) {
-                content = "📷 Изображение";
+                content = "Изображение";
             }
 
             log.info("Создание сообщения: user={}, event={}, content={}",
@@ -146,7 +146,7 @@ public class ChatWebSocketController {
                 image.setChatMessage(chatMessageRepository.getReferenceById(messageId));
                 imageRepository.save(image);
 
-                log.info("✓ Изображение {} прикреплено к сообщению {}", imageId, messageId);
+                log.info("Изображение {} прикреплено к сообщению {}", imageId, messageId);
 
             } catch (Exception e) {
                 log.error("Ошибка прикрепления изображения {}: {}", imageId, e.getMessage());

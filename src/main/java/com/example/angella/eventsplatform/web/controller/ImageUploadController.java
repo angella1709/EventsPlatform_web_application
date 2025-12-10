@@ -2,7 +2,6 @@ package com.example.angella.eventsplatform.web.controller;
 
 import com.example.angella.eventsplatform.entity.Image;
 import com.example.angella.eventsplatform.exception.AccessDeniedException;
-import com.example.angella.eventsplatform.exception.EntityNotFoundException;
 import com.example.angella.eventsplatform.mapper.ImageMapper;
 import com.example.angella.eventsplatform.service.EventAccessService;
 import com.example.angella.eventsplatform.service.ImageService;
