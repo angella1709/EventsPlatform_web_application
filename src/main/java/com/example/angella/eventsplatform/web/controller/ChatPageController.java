@@ -78,7 +78,7 @@ public class ChatPageController {
                 return "redirect:/chats?error=access_denied";
             }
 
-            // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Загружаем сообщения чата
+            //Загружаем сообщения чата
             PageModel pageModel = new PageModel(page, size);
             List<ChatMessage> chatMessages = chatService.getMessages(eventId, pageModel).getContent();
 

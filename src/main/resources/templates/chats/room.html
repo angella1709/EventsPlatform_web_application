@@ -706,12 +706,25 @@
                 }
 
             } finally {
-                // Восстанавливаем кнопку
-                if (sendButton) {
-                    sendButton.innerHTML = originalHtml || '<i class="fas fa-paper-plane"></i>';
-                    sendButton.disabled = false;
-                }
+                // Всегда восстанавливаем кнопку
+                restoreSendButton(sendButton);
             }
+        }
+
+        function restoreSendButton(sendButton, originalHtml = null, originalDisabled = false) {
+            // Удаляем класс отправки
+            sendButton.classList.remove('sending');
+
+            // Восстанавливаем содержимое
+            sendButton.innerHTML = originalHtml || '<i class="fas fa-paper-plane"></i>';
+
+            // Разблокируем кнопку
+            sendButton.disabled = originalDisabled;
+
+            // Добавляем небольшую задержку для предотвращения быстрых повторных нажатий
+            setTimeout(() => {
+                sendButton.disabled = false;
+            }, 500);
         }
 
         // Функция для загрузки изображений через REST API

@@ -66,7 +66,7 @@ public class EventService {
                 ));
         initializeLazyCollections(event);
 
-        List<Image> images = imageService.getEventImages(eventId);
+        List<Image> images = imageService.getEventOnlyImages(eventId);
         event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
 
         return event;
@@ -78,7 +78,7 @@ public class EventService {
                 .orElseThrow(() -> new EntityNotFoundException("Event not found"));
         initializeLazyCollections(event);
 
-        List<Image> images = imageService.getEventImages(id);
+        List<Image> images = imageService.getEventOnlyImages(id);
         event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
 
         return event;
@@ -90,7 +90,7 @@ public class EventService {
             Event event = eventRepository.findByIdWithRelations(eventId)
                     .orElseThrow(() -> new EntityNotFoundException("Event not found"));
 
-            List<Image> eventImages = imageService.getEventImages(eventId);
+            List<Image> eventImages = imageService.getEventOnlyImages(eventId);
             event.setImages(eventImages != null ? new HashSet<>(eventImages) : new HashSet<>());
 
             return event;
@@ -266,12 +266,12 @@ public class EventService {
         if (!eventRepository.existsById(eventId)) {
             throw new EntityNotFoundException("Event not found");
         }
-        return imageService.getEventImages(eventId);
+        return imageService.getEventOnlyImages(eventId);
     }
 
     @Transactional(readOnly = true)
     public Image getMainEventImage(Long eventId) {
-        List<Image> images = imageService.getEventImages(eventId);
+        List<Image> images = imageService.getEventOnlyImages(eventId);
         return images.isEmpty() ? null : images.get(0);
     }
 
@@ -280,7 +280,7 @@ public class EventService {
         List<Event> events = eventRepository.findAll();
         events.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
         return events;
@@ -297,7 +297,7 @@ public class EventService {
 
         futureEvents.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
 
@@ -315,7 +315,7 @@ public class EventService {
 
         futureEvents.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
 
@@ -337,7 +337,7 @@ public class EventService {
 
         userEvents.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
 
@@ -355,7 +355,7 @@ public class EventService {
 
         futureEvents.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
 
@@ -402,7 +402,7 @@ public class EventService {
 
         userEvents.forEach(event -> {
             initializeLazyCollections(event);
-            List<Image> images = imageService.getEventImages(event.getId());
+            List<Image> images = imageService.getEventOnlyImages(event.getId());
             event.setImages(images != null ? new HashSet<>(images) : new HashSet<>());
         });
 
@@ -433,5 +433,23 @@ public class EventService {
 
     public List<Object[]> getMostPopularCategories(int limit) {
         return eventRepository.findMostPopularCategories(limit);
+    }
+
+    @Transactional(readOnly = true)
+    public Event getEventForChatPage(Long eventId) {
+        Event event = eventRepository.findByIdWithRelations(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+
+        initializeLazyCollections(event);
+
+        // Для страницы чата НЕ загружаем изображения мероприятия
+        event.setImages(new HashSet<>());
+
+        return event;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Image> getChatImages(Long eventId) {
+        return imageService.getChatImagesOnly(eventId);
     }
 }

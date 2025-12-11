@@ -197,11 +197,20 @@ public class ImageService {
     public List<Image> getEventImages(Long eventId) {
         return imageRepository.findByEventId(eventId);
     }
+    public List<Image> getEventOnlyImages(Long eventId) {
+        return imageRepository.findByEventIdAndChatMessageIsNull(eventId);
+    }
+
+    //ТОЛЬКО изображения чата (chatMessage IS NOT NULL)
+    public List<Image> getChatImagesOnly(Long eventId) {
+        return imageRepository.findByEventIdAndChatMessageIsNotNull(eventId);
+    }
 
     // ПОЛУЧЕНИЕ ИЗОБРАЖЕНИЙ СООБЩЕНИЯ ЧАТА
     public List<Image> getChatMessageImages(Long chatMessageId) {
         return imageRepository.findByChatMessageId(chatMessageId);
     }
+
 
     // ПОЛУЧЕНИЕ ИЗОБРАЖЕНИЯ ПО ID С ПРОВЕРКОЙ ПРАВ
     public Image getImageById(Long imageId, Long userId) {
